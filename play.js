@@ -7,10 +7,22 @@ function getNextEvent(callback) {
 	xhr.open('get', 'https://crossorigin.me/'+flacApiNextEventUrl, true);
     xhr.onload = function(e) {
   		var data = JSON.parse(this.response);
-  		console.log(data);
+  		console.log('now playing: '+ data);
   		nextStream = data.url+'?src=alexa';
   		flacApiNextEventUrl = flacApiBaseUrl + '&event=' + data.end_event;
   		callback();
+	}
+    xhr.send();
+}
+
+function prepareNextEvent() {	
+	const xhr = new XMLHttpRequest();
+	xhr.open('get', 'https://crossorigin.me/'+flacApiNextEventUrl, true);
+    xhr.onload = function(e) {
+  		var data = JSON.parse(this.response);
+  		console.log('following Tracks: ' + data);
+  		nextStream = data.url+'?src=alexa';
+  		flacApiNextEventUrl = flacApiBaseUrl + '&event=' + data.end_event;
 	}
     xhr.send();
 }
@@ -21,7 +33,10 @@ function playStream() {
     	src: [nextStream],
 		ext: ['flac'],
     	autoplay: true,
-    	html5: true,
+		html5: true,
+		onplay: function() {
+			prepareNextEvent();			
+		},
     	onend: function() {
     		getNextEvent(playStream);
   		}
