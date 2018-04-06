@@ -2,12 +2,12 @@ var flacApiBaseUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info
 var flacApiNextEventUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true';
 var nextStream;
 
-function getNextEvent(callback) {	
+function getFirstEvent(callback) {	
 	const xhr = new XMLHttpRequest();
 	xhr.open('get', 'https://crossorigin.me/'+flacApiNextEventUrl, true);
     xhr.onload = function(e) {
   		var data = JSON.parse(this.response);
-  		console.log('now playing: '+ data);
+  		console.log(data);
   		nextStream = data.url+'?src=alexa';
   		flacApiNextEventUrl = flacApiBaseUrl + '&event=' + data.end_event;
   		callback();
@@ -20,7 +20,7 @@ function prepareNextEvent() {
 	xhr.open('get', 'https://crossorigin.me/'+flacApiNextEventUrl, true);
     xhr.onload = function(e) {
   		var data = JSON.parse(this.response);
-  		console.log('following Tracks: ' + data);
+  		console.log(data);
   		nextStream = data.url+'?src=alexa';
   		flacApiNextEventUrl = flacApiBaseUrl + '&event=' + data.end_event;
 	}
@@ -38,10 +38,10 @@ function playStream() {
 			prepareNextEvent();			
 		},
     	onend: function() {
-    		getNextEvent(playStream);
+    		playStream();
   		}
 	});
 	stream.play();
 }
 
-getNextEvent(playStream);
+getFirstEvent(playStream);
