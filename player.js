@@ -28,11 +28,12 @@ function getNextEvent() {
 
 function getNextEventAndAddToPlaylist(self) {
     var nextEvent = getNextEvent();
+    var nextEventSongsArray = Object.keys(nextEvent.song).map(function(k) { return nextEvent.song[k] });
     var newElement = 
     {
         title: 'RP Event ' + nextEvent.event,
         file: nextEvent.url + '?src=alexa',
-        songs: nextEvent.song,
+        songs: nextEventSongsArray,
         howl: null
     };
     
@@ -248,12 +249,27 @@ Player.prototype = {
 
     // Get the Howl we want to manipulate.
     var sound = self.playlist[self.index].howl;
-
     // Convert the percent into a seek position.
     if (sound.playing()) {
         var newPosition = sound.duration() * per;
-        console.log('sound.duration: ' + newPosition);
+        console.log('sound.duration: ' + newPosition * 1000);
         sound.seek(newPosition);
+        var currentSongs = self.playlist[self.index].songs;
+
+        var arrayLength = currentSongs.length;
+        var currentSong;
+        for (var i = 0; i < arrayLength; i++) {
+            var currentSongElapsed = currentSongs[i].elapsed;
+            if ( (newPosition * 1000) <= currentSongElapsed) {
+                currentSong = currentSongs[i-1];
+                console.log('got it: ' + currentSong.title);
+                break;
+            }
+        }
+        if(!currentSong) {
+            currentSong = currentSongs[arrayLength-1].title;
+            console.log('got it: ' + currentSong);
+        }
     }
   },
 
@@ -319,18 +335,21 @@ Player.prototype = {
 var firstEvent = getNextEvent();
 var secondEvent = getNextEvent();
 
+var firstEventSongsArray = Object.keys(firstEvent.song).map(function(k) { return firstEvent.song[k] });
+var secondEventSongsArray = Object.keys(secondEvent.song).map(function(k) { return secondEvent.song[k] });
+
 // Setup our new audio player class and pass it the playlist.
 var player = new Player([
   {
     title: 'RP Event ' + firstEvent.event,
     file: firstEvent.url + '?src=alexa',
-    songs: firstEvent.song,
+    songs: firstEventSongsArray,
     howl: null
   },
   {
     title: 'RP Event ' + secondEvent.event,
     file: secondEvent.url + '?src=alexa',
-    songs: secondEvent.song,
+    songs: secondEventSongsArray,
     howl: null
   }
 ]);
