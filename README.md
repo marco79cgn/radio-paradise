@@ -13,14 +13,14 @@ Result:
     "length": "1027.719",
     "url": "https://apps.radioparadise.com/blocks/chan/0/4/1682118-1682123.flac",
     "expiration": 1523016067,
-    "image_base": "\/\/img.radioparadise.com\/",
+    "image_base": "//img.radioparadise.com/",
     "song": {
         "0": {
             "event": "1682118",
             "duration": 225500,
             "artist": "Spirit of the West",
             "title": "And If Venice is Sinking",
-            "cover": "covers\/l\/B000002HFI.jpg",
+            "cover": "covers/l/B000002HFI.jpg",
             "elapsed": 0
         },
         "1": {
@@ -28,7 +28,7 @@ Result:
             "duration": 205850,
             "artist": "Amelia Curran",
             "title": "Scattered & Small",
-            "cover": "covers\/l\/B001JQHT8K.jpg",
+            "cover": "covers/l/B001JQHT8K.jpg",
             "elapsed": 225500
         }
     }
