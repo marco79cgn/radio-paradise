@@ -57,8 +57,9 @@ var Player = function(playlist) {
     var div = document.createElement('div');
     div.className = 'list-song';
     div.innerHTML = currentPlaylistItem.artist + ' - ' + currentPlaylistItem.title;
+    div.id = i;
     div.onclick = function() {
-      player.skipTo(i);
+      player.skipTo(this.id);
     };
     list.appendChild(div);
   }
