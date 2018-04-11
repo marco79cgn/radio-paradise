@@ -13,10 +13,10 @@ html {
     padding: 0;
     margin: 0;
     overflow: hidden;
-    background: #bb71f3;
-    background: -moz-linear-gradient(-45deg, #bb71f3 0%, #3d4d91 100%);
-    background: -webkit-linear-gradient(-45deg, #bb71f3 0%, #3d4d91 100%);
-    background: linear-gradient(135deg, #bb71f3 0%, #3d4d91 100%);
+    background: #3B9C9C;
+    background: -moz-linear-gradient(-45deg, #3B9C9C 0%, #3d4d91 100%);
+    background: -webkit-linear-gradient(-45deg, #3B9C9C 0%, #3d4d91 100%);
+    background: linear-gradient(135deg, #3B9C9C 0%, #3d4d91 100%);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#bb71f3', endColorstr='#3d4d91', GradientType=1);
     font-family: "Helvetica Neue", "Futura", "Trebuchet MS", Arial;
     -webkit-user-select: none;
@@ -28,7 +28,7 @@ html {
   #title {
     position: absolute;
     width: 100%;
-    top: 3%;
+    top: 7%;
     line-height: 34px;
     height: 34px;
     text-align: center;
@@ -314,3 +314,33 @@ html {
     from { opacity: 1; }
     to   { opacity: 0; }
   }
+
+#cover 
+{
+  height:200px;
+  width:200px;
+}
+#cover img
+{
+  max-width:100%; 
+  max-height:100%;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
+}
+
+#logo 
+{
+  height:100px;
+  width:100px;
+}
+#logo img
+{
+  max-width:100%; 
+  max-height:100%;
+  position: relative;
+  top: 20%;
+  left: 20%;
+}

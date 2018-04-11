@@ -19,15 +19,14 @@ function getNextEvent(isNotBlocking, self, callback) {
   var result;
   xhr.onload = function(e) {
     result = JSON.parse(this.response);
-    console.log(result);
     nextStream = result.url+'?src=alexa';
     flacApiNextEventUrl = flacApiBaseUrl + '&event=' + result.end_event;
     if(callback) {
       nextPlaylist = callback(result, self);
     }
 	}
-    xhr.send();
-    return result;
+  xhr.send();
+  return result;
 }
 
 function getNextEventAndAddToPlaylist(self) {
@@ -35,7 +34,7 @@ function getNextEventAndAddToPlaylist(self) {
 }
 
 // Cache references to DOM elements.
-var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'progress', 'bar', 'wave', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn'];
+var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'progress', 'bar', 'wave', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn', 'cover'];
 elms.forEach(function(elm) {
   window[elm] = document.getElementById(elm);
 });
@@ -50,7 +49,9 @@ var Player = function(playlist) {
   this.index = 0;
 
   // Display the title of the first track.
-  track.innerHTML = '1. ' + playlist.songs[0].artist + ' - ' + playlist.songs[0].title;
+  track.innerHTML = playlist.songs[0].artist + ' - ' + playlist.songs[0].title;
+
+  cover.innerHTML = "'<img src=\'" + playlist.songs[0].cover + "\'>";
 
   while (list.hasChildNodes()) {   
     list.removeChild(list.firstChild);
@@ -93,43 +94,22 @@ Player.prototype = {
         src: [data.file],
         html5: true, // Force to HTML5 so that the audio can stream in (best for large files).
         onplay: function() {
-          // Display the duration.
-          duration.innerHTML = self.formatTime(Math.round(sound.duration()));
-
-          // Start upating the progress of the track.
-          requestAnimationFrame(self.step.bind(self));
-
-          // Start the wave animation if we have already loaded
-          wave.container.style.display = 'block';
-          bar.style.display = 'none';
           pauseBtn.style.display = 'block';
-          //updateTitle = setInterval(function(){ updateTitleInHtml(self) }, 3000);
+          updateTitle = setInterval(function(){ updateTitleInHtml(self) }, 3000);
         },
         onload: function() {
-          // Start the wave animation.
-          wave.container.style.display = 'block';
-          bar.style.display = 'none';
           loading.style.display = 'none';
           getNextEventAndAddToPlaylist(self);
         },
         onend: function() {
-          // Stop the wave animation.
-          wave.container.style.display = 'none';
-          bar.style.display = 'block';
           clearInterval(updateTitle);
           player = new Player(nextPlaylist);
           player.play();
         },
         onpause: function() {
-          // Stop the wave animation.
-          wave.container.style.display = 'none';
-          bar.style.display = 'block';
           clearInterval(updateTitle);
         },
         onstop: function() {
-          // Stop the wave animation.
-          wave.container.style.display = 'none';
-          bar.style.display = 'block';
           clearInterval(updateTitle);
         }
       });
@@ -140,11 +120,13 @@ Player.prototype = {
 
     // Update the track display.
     if(data.songs[index]) {
-        track.innerHTML = (index + 1) + '. ' + data.songs[index].artist + ' - ' + data.songs[index].title;
+        track.innerHTML = data.songs[index].artist + ' - ' + data.songs[index].title;
+        cover.innerHTML = "'<img src=\'" + data.songs[index].cover + "\'>";
     } else {
         index = 0;
         progress.style.width = '0%';
-        track.innerHTML = (index + 1) + '. ' + data.songs[index].artist + ' - ' + data.songs[index].title;
+        track.innerHTML = data.songs[index].artist + ' - ' + data.songs[index].title;
+        cover.innerHTML = "'<img src=\'" + data.songs[index].cover + "\'>";
     }
 
     // Show the pause button.
@@ -192,13 +174,17 @@ Player.prototype = {
       if (index < 0) {
         index = 0;
       }
+      self.skipTo(index);
     } else {
       index = self.index + 1;
       if (index >= self.playlist.songs.length) {
-        index = 0;
+        self.playlist.howl.stop();
+        player = new Player(nextPlaylist);
+        player.play();
+      } else {
+        self.skipTo(index);
       }
     }
-    self.skipTo(index);
   },
 
   /**
@@ -267,7 +253,8 @@ Player.prototype = {
             currentSong = currentSongs[arrayLength-1];
             newIndex=arrayLength-1;
         }
-        track.innerHTML = (newIndex + 1) + '. ' + currentSong.artist + ' - ' + currentSong.title;
+        track.innerHTML = currentSong.artist + ' - ' + currentSong.title;
+        cover.innerHTML = "'<img src=\'" + currentSong.cover + "\'>";
         self.index = newIndex;
     }
   },
@@ -359,10 +346,12 @@ function updateTitleInHtml(self) {
       currentSong = currentSongs[arrayLength-1];
       newIndex=arrayLength-1;
   }
-  var trackToSet = (newIndex + 1) + '. ' + currentSong.artist + ' - ' + currentSong.title;
+  var trackToSet = currentSong.artist + ' - ' + currentSong.title;
   if(track.innerHTML != trackToSet) {
     console.log('setting new title.');
     track.innerHTML = trackToSet;
+    cover.innerHTML = "'<img src=\'" + currentSong.cover + "\'>";
+
   }
 }
 
@@ -380,7 +369,8 @@ function buildPlaylistForFirstEvent(event) {
         artist: currentSong.artist,
         title: currentSong.title,
         begin: (currentSong.elapsed/1000)/event.length,
-        elapsed: currentSong.elapsed
+        elapsed: currentSong.elapsed,
+        cover: 'http://img.radioparadise.com/' + currentSong.cover
     };
     playlistSongs.push(songItem);
   }
@@ -391,7 +381,7 @@ function buildPlaylistForFirstEvent(event) {
     howl: null
   };
   console.log('Got new playlist.');
-  console.log(playlist);
+  //console.log(playlist);
   return playlist;
 }
 
@@ -405,7 +395,8 @@ function addNextEventToPlaylist(event, self) {
         artist: currentSong.artist,
         title: currentSong.title,
         begin: (currentSong.elapsed/1000)/event.length,
-        elapsed: currentSong.elapsed
+        elapsed: currentSong.elapsed,
+        cover: 'http://img.radioparadise.com/' + currentSong.cover
     };
     playlistSongs.push(songItem);
   }
@@ -416,7 +407,7 @@ function addNextEventToPlaylist(event, self) {
     howl: null
   };
   console.log('Got new playlist.');
-  console.log(playlist);
+  //console.log(playlist);
   return playlist;
 }
 
@@ -435,9 +426,9 @@ prevBtn.addEventListener('click', function() {
 nextBtn.addEventListener('click', function() {
   player.skip('next');
 });
-waveform.addEventListener('click', function(event) {
-  player.seek(event.clientX / window.innerWidth);
-});
+// waveform.addEventListener('click', function(event) {
+//   player.seek(event.clientX / window.innerWidth);
+// });
 playlistBtn.addEventListener('click', function() {
   player.togglePlaylist();
 });
@@ -481,41 +472,3 @@ var move = function(event) {
 
 volume.addEventListener('mousemove', move);
 volume.addEventListener('touchmove', move);
-
-// Setup the "waveform" animation.
-var wave = new SiriWave({
-    container: waveform,
-    width: window.innerWidth,
-    height: window.innerHeight * 0.3,
-    cover: true,
-    speed: 0.03,
-    amplitude: 0.7,
-    frequency: 2
-});
-wave.start();
-
-// Update the height of the wave animation.
-// These are basically some hacks to get SiriWave.js to do what we want.
-var resize = function() {
-  var height = window.innerHeight * 0.3;
-  var width = window.innerWidth;
-  wave.height = height;
-  wave.height_2 = height / 2;
-  wave.MAX = wave.height_2 - 4;
-  wave.width = width;
-  wave.width_2 = width / 2;
-  wave.width_4 = width / 4;
-  wave.canvas.height = height;
-  wave.canvas.width = width;
-  wave.container.style.margin = -(height / 2) + 'px auto';
-
-  // Update the position of the slider.
-  var sound = player.playlist.howl;
-  if (sound) {
-    var vol = sound.volume();
-    var barWidth = (vol * 0.9);
-    sliderBtn.style.left = (window.innerWidth * barWidth + window.innerWidth * 0.05 - 25) + 'px';
-  }
-};
-window.addEventListener('resize', resize);
-resize();
