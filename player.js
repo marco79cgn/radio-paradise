@@ -9,27 +9,30 @@
  */
  
 var flacApiBaseUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true';
-var flacApiNextEventUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true&event=1684221';
+var flacApiNextEventUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true';
 var nextStream;
 var nextPlaylist;
 
-function getNextEvent() {	
+function getNextEvent(isNotBlocking, self, callback) {	
+  console.log('isNotBlocking: ' + isNotBlocking);
 	const xhr = new XMLHttpRequest();
-    xhr.open('get', 'https://crossorigin.me/'+flacApiNextEventUrl, false);
-    var result;
-    xhr.onload = function(e) {
-  		result = JSON.parse(this.response);
-  		console.log(result);
-  		nextStream = result.url+'?src=alexa';
-  		flacApiNextEventUrl = flacApiBaseUrl + '&event=' + result.end_event;
+  xhr.open('get', 'https://cors-anywhere.herokuapp.com/'+flacApiNextEventUrl, isNotBlocking);
+  var result;
+  xhr.onload = function(e) {
+    result = JSON.parse(this.response);
+    console.log(result);
+    nextStream = result.url+'?src=alexa';
+    flacApiNextEventUrl = flacApiBaseUrl + '&event=' + result.end_event;
+    if(callback) {
+      nextPlaylist = callback(result, self);
+    }
 	}
     xhr.send();
     return result;
 }
 
 function getNextEventAndAddToPlaylist(self) {
-    var nextEvent = getNextEvent();
-    nextPlaylist = addNextEventToPlaylist(nextEvent, self);
+    getNextEvent(true, self, addNextEventToPlaylist);
 }
 
 // Cache references to DOM elements.
@@ -57,9 +60,9 @@ var Player = function(playlist) {
     var div = document.createElement('div');
     div.className = 'list-song';
     div.innerHTML = currentPlaylistItem.artist + ' - ' + currentPlaylistItem.title;
-    div.id = i;
+    div.index = i;
     div.onclick = function() {
-      player.skipTo(this.id);
+      player.skipTo(this.index);
     };
     list.appendChild(div);
   }
@@ -73,6 +76,7 @@ Player.prototype = {
   play: function(index) {
     var self = this;
     var sound;
+    var updateTitle;
 
     index = typeof index === 'number' ? index : self.index;
     var data = self.playlist;
@@ -98,6 +102,7 @@ Player.prototype = {
           wave.container.style.display = 'block';
           bar.style.display = 'none';
           pauseBtn.style.display = 'block';
+          updateTitle = setInterval(function(){ updateTitleInHtml(self) }, 3000);
         },
         onload: function() {
           // Start the wave animation.
@@ -110,6 +115,7 @@ Player.prototype = {
           // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
+          clearInterval(updateTitle);
           //self.skip('right');
           player = new Player(nextPlaylist);
           player.play();
@@ -118,11 +124,13 @@ Player.prototype = {
           // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
+          clearInterval(updateTitle);
         },
         onstop: function() {
           // Stop the wave animation.
           wave.container.style.display = 'none';
           bar.style.display = 'block';
+          clearInterval(updateTitle);
         }
       });
     }
@@ -353,7 +361,36 @@ Player.prototype = {
   }
 };
 
-var firstEvent = getNextEvent();
+function updateTitleInHtml(self) {
+  // update title
+  var currentSongs = self.playlist.songs;
+  var arrayLength = self.playlist.songs.length;
+  var currentSong;
+  var newIndex;
+  for (var i = 0; i < arrayLength; i++) {
+      var currentSongElapsed = currentSongs[i].elapsed;
+      if ( (self.playlist.howl.seek() * 1000) <= currentSongElapsed) {
+          currentSong = currentSongs[i-1];
+          console.log('got it: ' + currentSong.title);
+          newIndex = i-1;
+          break;
+      }
+  }
+  if(!currentSong) {
+      currentSong = currentSongs[arrayLength-1];
+      newIndex=arrayLength-1;
+      console.log('got it: ' + currentSong.title);
+  }
+  var trackToSet = (newIndex + 1) + '. ' + currentSong.artist + ' - ' + currentSong.title;
+  if(track.innerHTML != trackToSet) {
+    console.log('setting new title.');
+    track.innerHTML = trackToSet;
+  } else {
+    console.log('no need to set title.');
+  }
+}
+
+var firstEvent = getNextEvent(false);
 
 // Setup our new audio player class and pass it the playlist.
 
