@@ -14,7 +14,6 @@ var nextStream;
 var nextPlaylist;
 
 function getNextEvent(isNotBlocking, self, callback) {	
-  console.log('isNotBlocking: ' + isNotBlocking);
 	const xhr = new XMLHttpRequest();
   xhr.open('get', 'https://cors-anywhere.herokuapp.com/'+flacApiNextEventUrl, isNotBlocking);
   var result;
@@ -53,6 +52,10 @@ var Player = function(playlist) {
   // Display the title of the first track.
   track.innerHTML = '1. ' + playlist.songs[0].artist + ' - ' + playlist.songs[0].title;
 
+  while (list.hasChildNodes()) {   
+    list.removeChild(list.firstChild);
+  }
+
   // Setup the playlist display.
   var playlistLength = playlist.songs.length;
   for (var i = 0; i < playlistLength; i++) {
@@ -84,10 +87,8 @@ Player.prototype = {
     // If we already loaded this track, use the current one.
     // Otherwise, setup and load a new Howl.
     if (data.howl) {
-      console.log('play: already loaded the current howl, using it.');
       sound = data.howl;
     } else {
-      console.log('play: starting new howl.');
       sound = data.howl = new Howl({
         src: [data.file],
         html5: true, // Force to HTML5 so that the audio can stream in (best for large files).
@@ -102,7 +103,7 @@ Player.prototype = {
           wave.container.style.display = 'block';
           bar.style.display = 'none';
           pauseBtn.style.display = 'block';
-          updateTitle = setInterval(function(){ updateTitleInHtml(self) }, 3000);
+          //updateTitle = setInterval(function(){ updateTitleInHtml(self) }, 3000);
         },
         onload: function() {
           // Start the wave animation.
@@ -116,7 +117,6 @@ Player.prototype = {
           wave.container.style.display = 'none';
           bar.style.display = 'block';
           clearInterval(updateTitle);
-          //self.skip('right');
           player = new Player(nextPlaylist);
           player.play();
         },
@@ -137,7 +137,6 @@ Player.prototype = {
 
     // Begin playing the sound.
     sound.play();
-    //this.seekTo(data, sound);
 
     // Update the track display.
     if(data.songs[index]) {
@@ -198,10 +197,7 @@ Player.prototype = {
       if (index >= self.playlist.songs.length) {
         index = 0;
       }
-      console.log('index in skip: ' + index);
-      //console.log('self.playlist.length: ' + self.playlist.length);
     }
-
     self.skipTo(index);
   },
 
@@ -210,29 +206,20 @@ Player.prototype = {
    * @param  {Number} index Index in the playlist.
    */
   skipTo: function(index) {
-    console.log('index in skipTo: ' + index);
     var self = this;
 
     // Stop the current track.
     var currentlyPlaying = self.playlist.howl;
     if (currentlyPlaying) {
-      console.log('stopping currently playing song.');
       currentlyPlaying.stop();
       self.play(index); 
       this.seekTo(index, self.playlist);
     } else {
-      console.log('starting new song.');
       // Reset progress.
       progress.style.width = '0%';
       // Play the new track.
       var id = self.play(index);
     }
-    // if (index >= (self.playlist.songs.length - 1)) {
-    //     console.log('Needing next element for Playlist.');
-    //     getNextEventAndAddToPlaylist(self);
-    // } else {
-    //     console.log('The Playlist is full enough, skipping next element call.');
-    // }
   },
 
   /**
@@ -256,7 +243,6 @@ Player.prototype = {
    * @param  {Number} per Percentage through the song to skip.
    */
   seek: function(per) {
-    console.log('seek: percentage: ' + per);
     var self = this;
 
     // Get the Howl we want to manipulate.
@@ -264,7 +250,6 @@ Player.prototype = {
     // Convert the percent into a seek position.
     if (sound.playing()) {
         var newPosition = sound.duration() * per;
-        console.log('sound.duration: ' + newPosition * 1000);
         sound.seek(newPosition);
         var currentSongs = self.playlist.songs;
         var arrayLength = currentSongs.length;
@@ -274,7 +259,6 @@ Player.prototype = {
             var currentSongElapsed = currentSongs[i].elapsed;
             if ( (newPosition * 1000) <= currentSongElapsed) {
                 currentSong = currentSongs[i-1];
-                console.log('got it: ' + currentSong.title);
                 newIndex = i-1;
                 break;
             }
@@ -282,7 +266,6 @@ Player.prototype = {
         if(!currentSong) {
             currentSong = currentSongs[arrayLength-1];
             newIndex=arrayLength-1;
-            console.log('got it: ' + currentSong.title);
         }
         track.innerHTML = (newIndex + 1) + '. ' + currentSong.artist + ' - ' + currentSong.title;
         self.index = newIndex;
@@ -294,11 +277,8 @@ Player.prototype = {
    */
   seekTo: function(index, data) {
     var self = this;
-    console.log('seekTo: data.length: ' + data.totalLength);
-    console.log('seekTo: percentage: ' + data.songs[index].begin);
     // Convert the percent into a seek position.
     var seekToPosition = data.totalLength * data.songs[index].begin;
-    console.log('seekTo: sound.duration: ' + seekToPosition);
     data.howl.seek(seekToPosition);    
   },
 
@@ -371,7 +351,6 @@ function updateTitleInHtml(self) {
       var currentSongElapsed = currentSongs[i].elapsed;
       if ( (self.playlist.howl.seek() * 1000) <= currentSongElapsed) {
           currentSong = currentSongs[i-1];
-          console.log('got it: ' + currentSong.title);
           newIndex = i-1;
           break;
       }
@@ -379,14 +358,11 @@ function updateTitleInHtml(self) {
   if(!currentSong) {
       currentSong = currentSongs[arrayLength-1];
       newIndex=arrayLength-1;
-      console.log('got it: ' + currentSong.title);
   }
   var trackToSet = (newIndex + 1) + '. ' + currentSong.artist + ' - ' + currentSong.title;
   if(track.innerHTML != trackToSet) {
     console.log('setting new title.');
     track.innerHTML = trackToSet;
-  } else {
-    console.log('no need to set title.');
   }
 }
 
@@ -403,12 +379,8 @@ function buildPlaylistForFirstEvent(event) {
     var songItem = {
         artist: currentSong.artist,
         title: currentSong.title,
-        //file: event.url + '?src=alexa',
-        //songs: songsArray,
         begin: (currentSong.elapsed/1000)/event.length,
         elapsed: currentSong.elapsed
-        //totalLength: event.length
-        //howl: null
     };
     playlistSongs.push(songItem);
   }
@@ -418,7 +390,7 @@ function buildPlaylistForFirstEvent(event) {
     songs: playlistSongs,
     howl: null
   };
-  console.log('nice one');
+  console.log('Got new playlist.');
   console.log(playlist);
   return playlist;
 }
@@ -432,25 +404,10 @@ function addNextEventToPlaylist(event, self) {
     var songItem = {
         artist: currentSong.artist,
         title: currentSong.title,
-        //file: event.url + '?src=alexa',
-        //songs: songsArray,
         begin: (currentSong.elapsed/1000)/event.length,
         elapsed: currentSong.elapsed
-        //totalLength: event.length
-        //howl: null
     };
     playlistSongs.push(songItem);
-    /* // Setup the playlist display.
-    var div = document.createElement('div');
-    div.className = 'list-song';
-    div.innerHTML = currentSong.artist + ' - ' + currentSong.title;
-    div.onclick = function() {
-        player.skipTo(self.playlist.indexOf(currentSong));
-    };
-    list.appendChild(div); */
-    /* if (self.playlist.length > 4) {
-        list.removeChild(list.childNodes[0]);
-    } */
   }
   var playlist = {
     file: event.url + '?src=alexa',
@@ -458,11 +415,9 @@ function addNextEventToPlaylist(event, self) {
     songs: playlistSongs,
     howl: null
   };
-  console.log('nice one');
+  console.log('Got new playlist.');
   console.log(playlist);
   return playlist;
-//   console.log('new playlist: ');
-//   console.log(self.playlist);
 }
 
 var player = new Player(buildPlaylistForFirstEvent(firstEvent));

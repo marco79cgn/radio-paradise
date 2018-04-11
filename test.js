@@ -6,7 +6,7 @@ var stream = new Howl({
     onend: function() {
     	console.log('Finished!');
     	var client = new HttpClient();
-		client.get('https://crossorigin.me/https://api.radioparadise.com/api/get_block?bitrate=4&info=true&event=1682204', function(response) {
+		client.get('https://cors-anywhere.herokuapp.com/https://api.radioparadise.com/api/get_block?bitrate=4&info=true&event=1682204', function(response) {
     		console.log('Got the next piece!');
     		var nextStream = new Howl({
     			src: ['https://apps.radioparadise.com/blocks/chan/0/4/1682205-1682210.flac?src=alexa'],
