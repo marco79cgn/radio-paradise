@@ -7,34 +7,9 @@
  *
  *  MIT License
  */
- 
-var flacApiBaseUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true';
-var flacApiNextEventUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true';
-var nextStream;
-var nextPlaylist;
-
-function getNextEvent(isNotBlocking, self, callback) {	
-	const xhr = new XMLHttpRequest();
-  xhr.open('get', 'https://cors-anywhere.herokuapp.com/'+flacApiNextEventUrl, isNotBlocking);
-  var result;
-  xhr.onload = function(e) {
-    result = JSON.parse(this.response);
-    nextStream = result.url+'?src=alexa';
-    flacApiNextEventUrl = flacApiBaseUrl + '&event=' + result.end_event;
-    if(callback) {
-      nextPlaylist = callback(result, self);
-    }
-	}
-  xhr.send();
-  return result;
-}
-
-function getNextEventAndAddToPlaylist(self) {
-    getNextEvent(true, self, addNextEventToPlaylist);
-}
 
 // Cache references to DOM elements.
-var elms = ['track', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'progress', 'bar', 'wave', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn', 'cover'];
+var elms = ['track', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn', 'cover'];
 elms.forEach(function(elm) {
   window[elm] = document.getElementById(elm);
 });
@@ -50,7 +25,6 @@ var Player = function(playlist) {
 
   // Display the title of the first track.
   track.innerHTML = playlist.songs[0].artist + ' - ' + playlist.songs[0].title;
-
   cover.innerHTML = "'<img src=\'" + playlist.songs[0].cover + "\'>";
 
   while (list.hasChildNodes()) {   
@@ -226,67 +200,12 @@ Player.prototype = {
 
   /**
    * Seek to a new position in the currently playing track.
-   * @param  {Number} per Percentage through the song to skip.
-   */
-  seek: function(per) {
-    var self = this;
-
-    // Get the Howl we want to manipulate.
-    var sound = self.playlist.howl;
-    // Convert the percent into a seek position.
-    if (sound.playing()) {
-        var newPosition = sound.duration() * per;
-        sound.seek(newPosition);
-        var currentSongs = self.playlist.songs;
-        var arrayLength = currentSongs.length;
-        var currentSong;
-        var newIndex;
-        for (var i = 0; i < arrayLength; i++) {
-            var currentSongElapsed = currentSongs[i].elapsed;
-            if ( (newPosition * 1000) <= currentSongElapsed) {
-                currentSong = currentSongs[i-1];
-                newIndex = i-1;
-                break;
-            }
-        }
-        if(!currentSong) {
-            currentSong = currentSongs[arrayLength-1];
-            newIndex=arrayLength-1;
-        }
-        track.innerHTML = currentSong.artist + ' - ' + currentSong.title;
-        cover.innerHTML = "'<img src=\'" + currentSong.cover + "\'>";
-        self.index = newIndex;
-    }
-  },
-
-  /**
-   * Seek to a new position in the currently playing track.
    */
   seekTo: function(index, data) {
     var self = this;
     // Convert the percent into a seek position.
     var seekToPosition = data.totalLength * data.songs[index].begin;
     data.howl.seek(seekToPosition);    
-  },
-
-  /**
-   * The step called within requestAnimationFrame to update the playback position.
-   */
-  step: function() {
-    var self = this;
-
-    // Get the Howl we want to manipulate.
-    var sound = self.playlist.howl;
-
-    // Determine our current seek position.
-    var seek = sound.seek() || 0;
-    timer.innerHTML = self.formatTime(Math.round(seek));
-    progress.style.width = (((seek / sound.duration()) * 100) || 0) + '%';
-
-    // If the sound is still playing, continue stepping.
-    if (sound.playing()) {
-      requestAnimationFrame(self.step.bind(self));
-    }
   },
 
   /**
@@ -355,9 +274,34 @@ function updateTitleInHtml(self) {
   }
 }
 
-var firstEvent = getNextEvent(false);
+var flacApiBaseUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true';
+var flacApiNextEventUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true';
+var nextStream;
+var nextPlaylist;
 
 // Setup our new audio player class and pass it the playlist.
+var firstEvent = getNextEvent(false);
+var player = new Player(buildPlaylistForFirstEvent(firstEvent));
+
+function getNextEvent(isNotBlocking, self, callback) {	
+	const xhr = new XMLHttpRequest();
+  xhr.open('get', 'https://cors-anywhere.herokuapp.com/'+flacApiNextEventUrl, isNotBlocking);
+  var result;
+  xhr.onload = function(e) {
+    result = JSON.parse(this.response);
+    nextStream = result.url+'?src=alexa';
+    flacApiNextEventUrl = flacApiBaseUrl + '&event=' + result.end_event;
+    if(callback) {
+      nextPlaylist = callback(result, self);
+    }
+	}
+  xhr.send();
+  return result;
+}
+
+function getNextEventAndAddToPlaylist(self) {
+    getNextEvent(true, self, addNextEventToPlaylist);
+}
 
 function buildPlaylistForFirstEvent(event) {
   var songsArray = Object.keys(event.song).map(function(k) { return event.song[k] });
@@ -406,12 +350,10 @@ function addNextEventToPlaylist(event, self) {
     songs: playlistSongs,
     howl: null
   };
-  console.log('Got new playlist.');
+  //console.log('Got new playlist.');
   //console.log(playlist);
   return playlist;
 }
-
-var player = new Player(buildPlaylistForFirstEvent(firstEvent));
 
 // Bind our player controls.
 playBtn.addEventListener('click', function() {
@@ -426,9 +368,6 @@ prevBtn.addEventListener('click', function() {
 nextBtn.addEventListener('click', function() {
   player.skip('next');
 });
-// waveform.addEventListener('click', function(event) {
-//   player.seek(event.clientX / window.innerWidth);
-// });
 playlistBtn.addEventListener('click', function() {
   player.togglePlaylist();
 });
