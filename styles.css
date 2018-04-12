@@ -317,13 +317,13 @@ html {
 
 #cover 
 {
-  height:200px;
-  width:200px;
+  height:350px;
+  width:350px;
 }
 #cover img
 {
-  max-width:100%; 
-  max-height:100%;
+  width:350px; 
+  height:350px;
   position: fixed;
   top: 50%;
   left: 50%;
