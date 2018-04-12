@@ -4,7 +4,7 @@ var nextStream;
 
 function getNextEvent(callback) {	
 	const xhr = new XMLHttpRequest();
-	xhr.open('get', 'https://crossorigin.me/'+flacApiNextEventUrl, true);
+	xhr.open('get', 'https://cors-anywhere.herokuapp.com/'+flacApiNextEventUrl, true);
 	xhr.onload = function(e) {
 		var data = JSON.parse(this.response);
 		console.log(data);
