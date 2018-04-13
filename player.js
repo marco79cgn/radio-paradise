@@ -273,6 +273,16 @@ function updateTitleInHtml(self) {
 
   }
 }
+var myVar;
+
+function myFunction() {
+    myVar = setTimeout(showPage, 3000);
+}
+
+function showPage() {
+  document.getElementById("loader").style.display = "none";
+  document.getElementById("mainPage").style.display = "block";
+}
 
 var flacApiBaseUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true';
 var flacApiNextEventUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true';
@@ -293,6 +303,8 @@ function getNextEvent(isNotBlocking, self, callback) {
     flacApiNextEventUrl = flacApiBaseUrl + '&event=' + result.end_event;
     if(callback) {
       nextPlaylist = callback(result, self);
+    } else {
+      showPage();
     }
 	}
   xhr.send();

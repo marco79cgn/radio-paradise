@@ -6,54 +6,50 @@
   <title>Radio Paradise FLAC Player</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
-  <!-- Logo -->
-  <div id="logo"><img src="https://images-eu.ssl-images-amazon.com/images/I/51A-N2vXAlL.png" height="100" width="100"></div>
+<body onload="myFunction()" style="margin:0;">
 
-  <!-- Cover -->
-  <div id="cover"></div>
+    <div id="loader"></div>
+    <div style="display:none;" id="mainPage" class="animate-bottom">
+      <!-- Logo -->
+      <div id="logo"><img src="https://images-eu.ssl-images-amazon.com/images/I/51A-N2vXAlL.png" height="100" width="100"></div>
 
-  <!-- Top Info -->
-  <div id="title">
-    <span id="track"></span>
-    <!-- <div id="duration">0:00</div> -->
-  </div>
+      <!-- Cover -->
+      <div id="cover"></div>
 
-  <!-- Controls -->
-  <div class="controlsOuter">
-    <div class="controlsInner">
-      <div id="loading"></div>
-      <div class="btn" id="playBtn"></div>
-      <div class="btn" id="pauseBtn"></div>
-      <div class="btn" id="prevBtn"></div>
-      <div class="btn" id="nextBtn"></div>
+      <!-- Top Info -->
+      <div id="title">
+        <span id="track"></span>
+        <!-- <div id="duration">0:00</div> -->
+      </div>
+
+      <!-- Controls -->
+      <div class="controlsOuter">
+        <div class="controlsInner">
+          <div id="loading"></div>
+          <div class="btn" id="playBtn"></div>
+          <div class="btn" id="pauseBtn"></div>
+          <div class="btn" id="prevBtn"></div>
+          <div class="btn" id="nextBtn"></div>
+        </div>
+        <div class="btn" id="playlistBtn"></div>
+        <div class="btn" id="volumeBtn"></div>
+      </div>
+      
+      <!-- Playlist -->
+      <div id="playlist">
+        <div id="list"></div>
+      </div>
+
+      <!-- Volume -->
+      <div id="volume" class="fadeout">
+        <div id="barFull" class="bar"></div>
+        <div id="barEmpty" class="bar"></div>
+        <div id="sliderBtn"></div>
+      </div>
     </div>
-    <div class="btn" id="playlistBtn"></div>
-    <div class="btn" id="volumeBtn"></div>
-  </div>
-
-  <!-- Progress -->
-  <!-- <div id="waveform"></div>
-  <div id="bar"></div>
-  <div id="progress"></div> -->
-
-
-  
-  <!-- Playlist -->
-  <div id="playlist">
-    <div id="list"></div>
-  </div>
-
-  <!-- Volume -->
-  <div id="volume" class="fadeout">
-    <div id="barFull" class="bar"></div>
-    <div id="barEmpty" class="bar"></div>
-    <div id="sliderBtn"></div>
-  </div>
 
   <!-- Scripts -->
   <script src="./howler-core.js"></script>
-  <!--<script src="./siriwave.js"></script>-->
   <script src="./player.js"></script>
 </body>
 </html>
