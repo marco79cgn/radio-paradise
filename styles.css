@@ -392,7 +392,8 @@ html {
   to{ bottom:0; opacity:1 }
 }
 
-#myDiv {
+#mainPage {
   display: none;
-  text-align: center;
+   text-align: center;
+   height: 100vh;
 }
