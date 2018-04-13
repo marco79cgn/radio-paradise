@@ -7,7 +7,6 @@ function getNextEvent(callback) {
 	xhr.open('get', 'https://cors-anywhere.herokuapp.com/'+flacApiNextEventUrl, true);
 	xhr.onload = function(e) {
 		var data = JSON.parse(this.response);
-		console.log(data);
   		nextStream = data.url+'?src=alexa';
   		flacApiNextEventUrl = flacApiBaseUrl + '&event=' + data.end_event;
   		callback();
