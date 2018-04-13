@@ -6,7 +6,9 @@ A web based player for [Radio Paradise](http://www.radioparadise.com). It's buil
 
 ![alt text](https://github.com/marco79cgn/radio-paradise/blob/master/rp-player-playlist.png "")
 
-Disclaimer:
+Since the Radio Paradise API doesn't allow Cross-Origin Domain Sharing (CORS), the requests have to be proxied via [cors-anywhere](https://cors-anywhere.herokuapp.com/). The service might be unreliable over time and is not production ready.
+
+**Disclaimer:**
 This is a private proof of concept project and no official product of Radio Paradise.
 
 ## RadioParadise API
