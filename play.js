@@ -15,7 +15,6 @@ function getNextEvent(callback) {
 }
 
 function playStream() {
-	console.log('Playing Stream ' + nextStream);
 	var stream = new Howl({
 		src: [nextStream],
 		ext: ['flac'],
