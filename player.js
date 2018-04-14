@@ -267,7 +267,6 @@ function updateTitleInHtml(self) {
   }
   var trackToSet = currentSong.artist + ' - ' + currentSong.title;
   if(track.innerHTML != trackToSet) {
-    console.log('setting new title.');
     track.innerHTML = trackToSet;
     cover.innerHTML = "'<img src=\'" + currentSong.cover + "\'>";
 
@@ -337,8 +336,6 @@ function buildPlaylistForFirstEvent(event) {
     songs: playlistSongs,
     howl: null
   };
-  console.log('Got new playlist.');
-  //console.log(playlist);
   return playlist;
 }
 
@@ -363,8 +360,6 @@ function addNextEventToPlaylist(event, self) {
     songs: playlistSongs,
     howl: null
   };
-  //console.log('Got new playlist.');
-  //console.log(playlist);
   return playlist;
 }
 
