@@ -68,7 +68,9 @@ Player.prototype = {
         src: [data.file],
         html5: true, // Force to HTML5 so that the audio can stream in (best for large files).
         onplay: function() {
+          playBtn.style.display = 'none';
           pauseBtn.style.display = 'block';
+          clearInterval(updateTitle);
           updateTitle = setInterval(function(){ updateTitleInHtml(self) }, 3000);
         },
         onload: function() {
@@ -102,7 +104,6 @@ Player.prototype = {
         track.innerHTML = data.songs[index].artist + ' - ' + data.songs[index].title;
         cover.innerHTML = "<img src=\'" + data.songs[index].cover + "\'>";
     }
-
     // Show the pause button.
     if (sound.state() === 'loaded') {
       playBtn.style.display = 'none';
@@ -175,8 +176,6 @@ Player.prototype = {
       self.play(index); 
       this.seekTo(index, self.playlist);
     } else {
-      // Reset progress.
-      progress.style.width = '0%';
       // Play the new track.
       var id = self.play(index);
     }
