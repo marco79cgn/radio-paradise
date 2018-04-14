@@ -25,7 +25,7 @@ var Player = function(playlist) {
 
   // Display the title of the first track.
   track.innerHTML = playlist.songs[0].artist + ' - ' + playlist.songs[0].title;
-  cover.innerHTML = "'<img src=\'" + playlist.songs[0].cover + "\'>";
+  cover.innerHTML = "<img src=\'" + playlist.songs[0].cover + "\'>";
 
   while (list.hasChildNodes()) {   
     list.removeChild(list.firstChild);
@@ -95,12 +95,12 @@ Player.prototype = {
     // Update the track display.
     if(data.songs[index]) {
         track.innerHTML = data.songs[index].artist + ' - ' + data.songs[index].title;
-        cover.innerHTML = "'<img src=\'" + data.songs[index].cover + "\'>";
+        cover.innerHTML = "<img src=\'" + data.songs[index].cover + "\'>";
     } else {
         index = 0;
         progress.style.width = '0%';
         track.innerHTML = data.songs[index].artist + ' - ' + data.songs[index].title;
-        cover.innerHTML = "'<img src=\'" + data.songs[index].cover + "\'>";
+        cover.innerHTML = "<img src=\'" + data.songs[index].cover + "\'>";
     }
 
     // Show the pause button.
@@ -268,7 +268,7 @@ function updateTitleInHtml(self) {
   var trackToSet = currentSong.artist + ' - ' + currentSong.title;
   if(track.innerHTML != trackToSet) {
     track.innerHTML = trackToSet;
-    cover.innerHTML = "'<img src=\'" + currentSong.cover + "\'>";
+    cover.innerHTML = "<img src=\'" + currentSong.cover + "\'>";
 
   }
 }
