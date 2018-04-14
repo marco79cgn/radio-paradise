@@ -27,8 +27,9 @@ html {
   /* Top Info */
   #title {
     position: absolute;
-    width: 100%;
+    width: 65%;
     top: 7%;
+    left: 17.5%;
     line-height: 34px;
     height: 34px;
     text-align: center;
