@@ -49,9 +49,9 @@ Result:
 The result includes:
 1. a URL ("url") for a flac file that is played back using http streaming (add ?src=alexa to this URL during testing), for example
 `https://apps.radioparadise.com/blocks/chan/0/4/1682119-1682123.flac?src=alex`
-2. the value "end_event", which is used to build the next API query, and "length", the play time (in sec) of that block
+2. the value `end_event`, which is used to build the next API query, and `length`, the play time (in sec) of that block
 3. an array of song metadata for the songs included in that block of programming
-4. for each song, the elapsed time (in ms - from the beginning of the block) when that song begins.
+4. for each song, the `elapsed` time (in ms - from the beginning of the block) when that song begins.
 
 ### Workflow:
 - The player would start the file & display the metadata for `song[0]`. 
