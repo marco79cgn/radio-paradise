@@ -1,4 +1,4 @@
-# radio-paradise
+# radio-paradise FLAC player
 
 A web based player for [Radio Paradise](http://www.radioparadise.com). It's build upon [howler-js](https://github.com/goldfire/howler.js) in plain javascript and plays the FLAC stream (lossless). No interaction is required, but it's possible to skip or repeat tracks and even to choose them from the playlist.
 
@@ -7,6 +7,8 @@ A web based player for [Radio Paradise](http://www.radioparadise.com). It's buil
 ![alt text](https://github.com/marco79cgn/radio-paradise/blob/master/rp-player-playlist.png "")
 
 Since the Radio Paradise API doesn't allow Cross-Origin Domain Sharing (CORS), the requests have to be proxied via [cors-anywhere](https://cors-anywhere.herokuapp.com/). The service might be unreliable over time and is not production ready.
+
+It's running quite smooth in Google Chrome. In Safari, it takes a bit more time to load and play the tracks.
 
 **Disclaimer:**
 This is a private proof of concept project and no official product of [Radio Paradise](http://www.radioparadise.com).
