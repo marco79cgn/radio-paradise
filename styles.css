@@ -329,6 +329,7 @@ html {
   left: 50%;
   /* bring your own prefixes */
   transform: translate(-50%, -50%);
+  box-shadow: 10px 20px 30px rgba(0, 0, 0, 0.33);
 }
 
 #logo 
