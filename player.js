@@ -288,7 +288,7 @@ Player.prototype = {
     if(track.innerHTML != trackToSet) {
       track.innerHTML = trackToSet;
       cover.innerHTML = "<img src=\'" + currentSong.cover + "\'>";
-
+      self.index = newIndex;
     }
   }
 };
