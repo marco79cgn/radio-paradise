@@ -9,7 +9,7 @@
  */
 
 // Cache references to DOM elements.
-var elms = ['track', 'album', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn', 'cover', 'nextLoading', 'prevLoading'];
+var elms = ['track', 'album', 'timer', 'duration', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn', 'cover', 'nextLoading', 'prevLoading', 'progress'];
 elms.forEach(function(elm) {
   window[elm] = document.getElementById(elm);
 });
@@ -72,6 +72,11 @@ Player.prototype = {
           playBtn.style.display = 'none';
           pauseBtn.style.display = 'block';
           clearInterval(updateTitle);
+          // Start upating the progress of the track.
+          setTimeout(function() {
+            requestAnimationFrame(self.step.bind(self));
+            // magical code here
+          }, 1000);
           updateTitle = setInterval(function(){ self.updateTitleInHtml() }, 3000);
         },
         onload: function() {
@@ -226,7 +231,31 @@ Player.prototype = {
     var self = this;
     // Convert the percent into a seek position.
     var seekToPosition = data.totalLength * data.songs[index].begin;
-    data.howl.seek(seekToPosition);    
+    data.howl.seek(seekToPosition);   
+  },
+
+  /**
+   * The step called within requestAnimationFrame to update the playback position.
+   */
+  step: function() {
+    var self = this;
+
+    // Get the Howl we want to manipulate.
+    var sound = self.playlist.howl;
+
+    // Determine our current seek position.
+    var seek = sound.seek() || 0;
+
+    timer.innerHTML = self.formatTime(Math.round(seek));
+    progress.style.width = (((seek / sound.duration()) * 100) || 0) + '%';
+
+    // If the sound is still playing, continue stepping.
+    if (sound.playing()) {
+      setTimeout(function() {
+        requestAnimationFrame(self.step.bind(self));
+        // magical code here
+      }, 1000);
+    }
   },
 
   /**
