@@ -9,7 +9,7 @@
  */
 
 // Cache references to DOM elements.
-var elms = ['track', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn', 'cover'];
+var elms = ['track', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn', 'cover', 'nextLoading', 'prevLoading'];
 elms.forEach(function(elm) {
   window[elm] = document.getElementById(elm);
 });
@@ -40,7 +40,7 @@ var Player = function(playlist) {
     div.innerHTML = currentPlaylistItem.artist + ' - ' + currentPlaylistItem.title;
     div.index = i;
     div.onclick = function() {
-      player.skipTo(this.index);
+      player.playlistSkipTo(this.index);
     };
     list.appendChild(div);
   }
@@ -71,14 +71,17 @@ Player.prototype = {
           playBtn.style.display = 'none';
           pauseBtn.style.display = 'block';
           clearInterval(updateTitle);
-          updateTitle = setInterval(function(){ updateTitleInHtml(self) }, 3000);
+          updateTitle = setInterval(function(){ self.updateTitleInHtml() }, 3000);
         },
         onload: function() {
+          clearInterval(updateTitle);
           loading.style.display = 'none';
           getNextEventAndAddToPlaylist(self);
         },
         onend: function() {
           clearInterval(updateTitle);
+          data.howl.stop();
+          self.pause();
           player = new Player(nextPlaylist);
           player.play();
         },
@@ -95,15 +98,11 @@ Player.prototype = {
     sound.play();
 
     // Update the track display.
-    if(data.songs[index]) {
-        track.innerHTML = data.songs[index].artist + ' - ' + data.songs[index].title;
-        cover.innerHTML = "<img src=\'" + data.songs[index].cover + "\'>";
-    } else {
+    if(!data.songs[index]) {
         index = 0;
-        progress.style.width = '0%';
-        track.innerHTML = data.songs[index].artist + ' - ' + data.songs[index].title;
-        cover.innerHTML = "<img src=\'" + data.songs[index].cover + "\'>";
     }
+    track.innerHTML = data.songs[index].artist + ' - ' + data.songs[index].title;
+    cover.innerHTML = "<img src=\'" + data.songs[index].cover + "\'>";
     // Show the pause button.
     if (sound.state() === 'loaded') {
       playBtn.style.display = 'none';
@@ -141,6 +140,13 @@ Player.prototype = {
    */
   skip: function(direction) {
     var self = this;
+    nextBtn.style.display = 'none';
+    prevBtn.style.display = 'none';
+    prevLoading.style.display = 'block';
+    nextLoading.style.display = 'block';
+    setTimeout(function(){ showButtons(); }, 3000);
+    self.playlist.howl.stop();
+    clearInterval(self.updateTitle);
 
     // Get the next track based on the direction of the track.
     var index = 0;
@@ -153,9 +159,14 @@ Player.prototype = {
     } else {
       index = self.index + 1;
       if (index >= self.playlist.songs.length) {
-        self.playlist.howl.stop();
-        player = new Player(nextPlaylist);
-        player.play();
+        if(self.playlist.file == nextPlaylist.file) {
+          index = 0;
+          self.skipTo(index);
+        } else {
+          self.playlist.howl.stop();
+          player = new Player(nextPlaylist);
+          player.play();
+        }
       } else {
         self.skipTo(index);
       }
@@ -168,17 +179,26 @@ Player.prototype = {
    */
   skipTo: function(index) {
     var self = this;
+    clearInterval(self.updateTitle);
 
     // Stop the current track.
-    var currentlyPlaying = self.playlist.howl;
-    if (currentlyPlaying) {
-      currentlyPlaying.stop();
-      self.play(index); 
-      this.seekTo(index, self.playlist);
-    } else {
-      // Play the new track.
-      var id = self.play(index);
-    }
+    self.playlist.howl.stop();
+    self.play(index); 
+    this.seekTo(index, self.playlist);
+  },
+
+  /**
+   * skip from Playlist to a specific track based on its playlist index.
+   * @param  {Number} index Index in the playlist.
+   */
+  playlistSkipTo: function(index) {
+    var self = this;
+    nextBtn.style.display = 'none';
+    prevBtn.style.display = 'none';
+    prevLoading.style.display = 'block';
+    nextLoading.style.display = 'block';
+    setTimeout(function(){ showButtons(); }, 3000);
+    this.skipTo(index);
   },
 
   /**
@@ -243,38 +263,41 @@ Player.prototype = {
     var seconds = (secs - minutes * 60) || 0;
 
     return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+  },
+
+  updateTitleInHtml: function () {
+    var self = this;
+    // update title
+    var currentSongs = self.playlist.songs;
+    var arrayLength = self.playlist.songs.length;
+    var currentSong;
+    var newIndex;
+    for (var i = 0; i < arrayLength; i++) {
+        var currentSongElapsed = currentSongs[i].elapsed;
+        if ( (self.playlist.howl.seek() * 1000) <= currentSongElapsed) {
+            currentSong = currentSongs[i-1];
+            newIndex = i-1;
+            break;
+        }
+    }
+    if(!currentSong) {
+        currentSong = currentSongs[arrayLength-1];
+        newIndex=arrayLength-1;
+    }
+    var trackToSet = currentSong.artist + ' - ' + currentSong.title;
+    if(track.innerHTML != trackToSet) {
+      track.innerHTML = trackToSet;
+      cover.innerHTML = "<img src=\'" + currentSong.cover + "\'>";
+
+    }
   }
 };
 
-function updateTitleInHtml(self) {
-  // update title
-  var currentSongs = self.playlist.songs;
-  var arrayLength = self.playlist.songs.length;
-  var currentSong;
-  var newIndex;
-  for (var i = 0; i < arrayLength; i++) {
-      var currentSongElapsed = currentSongs[i].elapsed;
-      if ( (self.playlist.howl.seek() * 1000) <= currentSongElapsed) {
-          currentSong = currentSongs[i-1];
-          newIndex = i-1;
-          break;
-      }
-  }
-  if(!currentSong) {
-      currentSong = currentSongs[arrayLength-1];
-      newIndex=arrayLength-1;
-  }
-  var trackToSet = currentSong.artist + ' - ' + currentSong.title;
-  if(track.innerHTML != trackToSet) {
-    track.innerHTML = trackToSet;
-    cover.innerHTML = "<img src=\'" + currentSong.cover + "\'>";
-
-  }
-}
-var myVar;
-
-function myFunction() {
-    myVar = setTimeout(showPage, 3000);
+function showButtons(self) {
+  prevLoading.style.display = 'none';
+  nextLoading.style.display = 'none';
+  nextBtn.style.display = 'block';
+  prevBtn.style.display = 'block';
 }
 
 function showPage() {
@@ -291,6 +314,7 @@ var nextPlaylist;
 var firstEvent = getNextEvent(false);
 var player = new Player(buildPlaylistForFirstEvent(firstEvent));
 player.play();
+showPage();
 
 function getNextEvent(isNotBlocking, self, callback) {	
 	const xhr = new XMLHttpRequest();
