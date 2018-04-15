@@ -9,7 +9,7 @@
  */
 
 // Cache references to DOM elements.
-var elms = ['track', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn', 'cover', 'nextLoading', 'prevLoading'];
+var elms = ['track', 'album', 'playBtn', 'pauseBtn', 'prevBtn', 'nextBtn', 'playlistBtn', 'volumeBtn', 'loading', 'playlist', 'list', 'volume', 'barEmpty', 'barFull', 'sliderBtn', 'cover', 'nextLoading', 'prevLoading'];
 elms.forEach(function(elm) {
   window[elm] = document.getElementById(elm);
 });
@@ -25,6 +25,7 @@ var Player = function(playlist) {
 
   // Display the title of the first track.
   track.innerHTML = playlist.songs[0].artist + ' - ' + playlist.songs[0].title;
+  album.innerHTML = 'Album: ' + playlist.songs[0].album + ' (' + playlist.songs[0].year+ ')';
   cover.innerHTML = "<img src=\'" + playlist.songs[0].cover + "\'>";
 
   while (list.hasChildNodes()) {   
@@ -102,6 +103,7 @@ Player.prototype = {
         index = 0;
     }
     track.innerHTML = data.songs[index].artist + ' - ' + data.songs[index].title;
+    album.innerHTML = 'Album: ' + data.songs[index].album + ' (' + data.songs[index].year+ ')';
     cover.innerHTML = "<img src=\'" + data.songs[index].cover + "\'>";
     // Show the pause button.
     if (sound.state() === 'loaded') {
@@ -287,6 +289,7 @@ Player.prototype = {
     var trackToSet = currentSong.artist + ' - ' + currentSong.title;
     if(track.innerHTML != trackToSet) {
       track.innerHTML = trackToSet;
+      album.innerHTML = 'Album: ' + currentSong.album + ' (' + currentSong.year+ ')';
       cover.innerHTML = "<img src=\'" + currentSong.cover + "\'>";
       self.index = newIndex;
     }
@@ -349,7 +352,9 @@ function buildPlaylistForFirstEvent(event) {
         title: currentSong.title,
         begin: (currentSong.elapsed/1000)/event.length,
         elapsed: currentSong.elapsed,
-        cover: 'http://img.radioparadise.com/' + currentSong.cover
+        cover: 'http://img.radioparadise.com/' + currentSong.cover,
+        album: currentSong.album,
+        year: currentSong.year
     };
     playlistSongs.push(songItem);
   }
@@ -373,7 +378,9 @@ function addNextEventToPlaylist(event, self) {
         title: currentSong.title,
         begin: (currentSong.elapsed/1000)/event.length,
         elapsed: currentSong.elapsed,
-        cover: 'http://img.radioparadise.com/' + currentSong.cover
+        cover: 'http://img.radioparadise.com/' + currentSong.cover,
+        album: currentSong.album,
+        year: currentSong.year
     };
     playlistSongs.push(songItem);
   }
