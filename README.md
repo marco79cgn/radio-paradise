@@ -6,6 +6,15 @@ A web based player for [Radio Paradise](http://www.radioparadise.com). It's buil
 
 ![alt text](https://github.com/marco79cgn/radio-paradise/blob/master/rp-player-playlist.png "")
 
+**All desired features have been implemented and tested. These include:**
+- the FLAC version of Radio Paradise (playing endlessly like a real stream)
+- the current track information (artist, title, album, year)
+- a playlist of the current event incl. random access
+- previous and next buttons (skipping)
+- a volume slider
+- the progress (time and bar)
+- a donation button (to show some love to Bill & Rebecca)
+
 Since the Radio Paradise API doesn't allow Cross-Origin Domain Sharing (CORS), the requests have to be proxied via [cors-anywhere](https://cors-anywhere.herokuapp.com/). The service might be unreliable over time and is not production ready.
 
 It's running quite smooth in Google Chrome. In Safari, it takes a bit more time to load and play the tracks.
