@@ -264,7 +264,11 @@ Player.prototype = {
     var currentStartTime = self.playlist.totalLength - (currentSong.elapsed/1000);
     var progressStep = ((currentTrackTime / (currentSong.duration / 1000) * 100) || 0) + '%';
 
-    timer.innerHTML = self.formatTime(Math.round(currentTrackTime));
+    if(currentTrackTime <= 0) {
+      timer.innerHTML = self.formatTime(Math.round(0.0));
+    } else {
+      timer.innerHTML = self.formatTime(Math.round(currentTrackTime));
+    }
     progress.style.width = progressStep;
 
     // If the sound is still playing, continue stepping.
