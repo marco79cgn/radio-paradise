@@ -246,8 +246,26 @@ Player.prototype = {
     // Determine our current seek position.
     var seek = sound.seek() || 0;
 
-    timer.innerHTML = self.formatTime(Math.round(seek));
-    progress.style.width = (((seek / sound.duration()) * 100) || 0) + '%';
+    var currentSongs = self.playlist.songs;
+    var arrayLength = currentSongs.length;
+    var currentSong;
+    for (var i = 0; i < arrayLength; i++) {
+        var currentSongElapsed = currentSongs[i].elapsed;
+        if ((seek * 1000) <= currentSongElapsed) {
+            currentSong = currentSongs[i-1];
+            break;
+        }
+    }
+    if(!currentSong) {
+        currentSong = currentSongs[arrayLength-1];
+    }
+
+    var currentTrackTime = seek - (currentSong.elapsed/1000);
+    var currentStartTime = self.playlist.totalLength - (currentSong.elapsed/1000);
+    var progressStep = ((currentTrackTime / (currentSong.duration / 1000) * 100) || 0) + '%';
+
+    timer.innerHTML = self.formatTime(Math.round(currentTrackTime));
+    progress.style.width = progressStep;
 
     // If the sound is still playing, continue stepping.
     if (sound.playing()) {
@@ -383,7 +401,8 @@ function buildPlaylistForFirstEvent(event) {
         elapsed: currentSong.elapsed,
         cover: 'http://img.radioparadise.com/' + currentSong.cover,
         album: currentSong.album,
-        year: currentSong.year
+        year: currentSong.year,
+        duration: currentSong.duration
     };
     playlistSongs.push(songItem);
   }
@@ -409,7 +428,8 @@ function addNextEventToPlaylist(event, self) {
         elapsed: currentSong.elapsed,
         cover: 'http://img.radioparadise.com/' + currentSong.cover,
         album: currentSong.album,
-        year: currentSong.year
+        year: currentSong.year,
+        duration: currentSong.duration
     };
     playlistSongs.push(songItem);
   }
