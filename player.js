@@ -403,7 +403,7 @@ function buildPlaylistForFirstEvent(event) {
         title: currentSong.title,
         begin: (currentSong.elapsed/1000)/event.length,
         elapsed: currentSong.elapsed,
-        cover: 'http://img.radioparadise.com/' + currentSong.cover,
+        cover: 'https://img.radioparadise.com/' + currentSong.cover,
         album: currentSong.album,
         year: currentSong.year,
         duration: currentSong.duration
@@ -430,7 +430,7 @@ function addNextEventToPlaylist(event, self) {
         title: currentSong.title,
         begin: (currentSong.elapsed/1000)/event.length,
         elapsed: currentSong.elapsed,
-        cover: 'http://img.radioparadise.com/' + currentSong.cover,
+        cover: 'https://img.radioparadise.com/' + currentSong.cover,
         album: currentSong.album,
         year: currentSong.year,
         duration: currentSong.duration
