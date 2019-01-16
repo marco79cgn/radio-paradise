@@ -367,7 +367,7 @@ var nextPlaylist;
 // Setup our new audio player class and pass it the playlist.
 var firstEvent = getNextEvent(false);
 var player = new Player(buildPlaylistForFirstEvent(firstEvent));
-player.play();
+//player.play();
 showPage();
 
 function getNextEvent(isNotBlocking, self, callback) {	
