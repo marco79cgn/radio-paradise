@@ -357,6 +357,7 @@ function showButtons(self) {
 function showPage() {
   document.getElementById("loader").style.display = "none";
   document.getElementById("mainPage").style.display = "block";
+  playBtn.style.display = 'block';
 }
 
 var flacApiBaseUrl = 'https://api.radioparadise.com/api/get_block?bitrate=4&info=true';
