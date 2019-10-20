@@ -100,7 +100,6 @@ Player.prototype = {
       });
     }
 	  
-	  self.volume(0.5);
     // Begin playing the sound.
     sound.play();
 
@@ -369,6 +368,7 @@ var nextPlaylist;
 // Setup our new audio player class and pass it the playlist.
 var firstEvent = getNextEvent(false);
 var player = new Player(buildPlaylistForFirstEvent(firstEvent));
+player.volume(0);
 //player.play();
 showPage();
 
