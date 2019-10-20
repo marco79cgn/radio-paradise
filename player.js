@@ -368,7 +368,6 @@ var nextPlaylist;
 // Setup our new audio player class and pass it the playlist.
 var firstEvent = getNextEvent(false);
 var player = new Player(buildPlaylistForFirstEvent(firstEvent));
-player.volume(0);
 //player.play();
 showPage();
 
