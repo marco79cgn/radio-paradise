@@ -99,7 +99,8 @@ Player.prototype = {
         }
       });
     }
-
+	  
+	  self.volume(0.5);
     // Begin playing the sound.
     sound.play();
 
