@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.2.0
+ *  howler.js v2.2.3
  *  howlerjs.com
  *
  *  (c) 2013-2020, James Simpson of GoldFire Studios
@@ -264,8 +264,12 @@
       var mpegTest = audioTest.canPlayType('audio/mpeg;').replace(/^no$/, '');
 
       // Opera version <33 has mixed MP3 support, so we need to check for and block it.
-      var checkOpera = self._navigator && self._navigator.userAgent.match(/OPR\/([0-6].)/g);
+      var ua = self._navigator ? self._navigator.userAgent : '';
+      var checkOpera = ua.match(/OPR\/([0-6].)/g);
       var isOldOpera = (checkOpera && parseInt(checkOpera[0].split('/')[1], 10) < 33);
+      var checkSafari = ua.indexOf('Safari') !== -1 && ua.indexOf('Chrome') === -1;
+      var safariVersion = ua.match(/Version\/(.*?) /);
+      var isOldSafari = (checkSafari && safariVersion && parseInt(safariVersion[1], 10) < 15);
 
       self._codecs = {
         mp3: !!(!isOldOpera && (mpegTest || audioTest.canPlayType('audio/mp3;').replace(/^no$/, ''))),
@@ -273,14 +277,14 @@
         opus: !!audioTest.canPlayType('audio/ogg; codecs="opus"').replace(/^no$/, ''),
         ogg: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
         oga: !!audioTest.canPlayType('audio/ogg; codecs="vorbis"').replace(/^no$/, ''),
-        wav: !!audioTest.canPlayType('audio/wav; codecs="1"').replace(/^no$/, ''),
+        wav: !!(audioTest.canPlayType('audio/wav; codecs="1"') || audioTest.canPlayType('audio/wav')).replace(/^no$/, ''),
         aac: !!audioTest.canPlayType('audio/aac;').replace(/^no$/, ''),
         caf: !!audioTest.canPlayType('audio/x-caf;').replace(/^no$/, ''),
         m4a: !!(audioTest.canPlayType('audio/x-m4a;') || audioTest.canPlayType('audio/m4a;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
         m4b: !!(audioTest.canPlayType('audio/x-m4b;') || audioTest.canPlayType('audio/m4b;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
         mp4: !!(audioTest.canPlayType('audio/x-mp4;') || audioTest.canPlayType('audio/mp4;') || audioTest.canPlayType('audio/aac;')).replace(/^no$/, ''),
-        weba: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
-        webm: !!audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, ''),
+        weba: !!(!isOldSafari && audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')),
+        webm: !!(!isOldSafari && audioTest.canPlayType('audio/webm; codecs="vorbis"').replace(/^no$/, '')),
         dolby: !!audioTest.canPlayType('audio/mp4; codecs="ec-3"').replace(/^no$/, ''),
         flac: !!(audioTest.canPlayType('audio/x-flac;') || audioTest.canPlayType('audio/flac;')).replace(/^no$/, '')
       };
@@ -392,6 +396,7 @@
           document.removeEventListener('touchstart', unlock, true);
           document.removeEventListener('touchend', unlock, true);
           document.removeEventListener('click', unlock, true);
+          document.removeEventListener('keydown', unlock, true);
 
           // Let all sounds know that audio has been unlocked.
           for (var i=0; i<self._howls.length; i++) {
@@ -404,6 +409,7 @@
       document.addEventListener('touchstart', unlock, true);
       document.addEventListener('touchend', unlock, true);
       document.addEventListener('click', unlock, true);
+      document.addEventListener('keydown', unlock, true);
 
       return self;
     },
@@ -915,6 +921,7 @@
                   node._unlocked = true;
                   if (!internal) {
                     self._emit('play', sound._id);
+                  } else {
                     self._loadQueue();
                   }
                 })
@@ -931,7 +938,6 @@
               self._playLock = false;
               setParams();
               self._emit('play', sound._id);
-              self._loadQueue();
             }
 
             // Setting rate before playing won't work in IE, so we set it again here.
@@ -974,8 +980,11 @@
           playHtml5();
         } else {
           self._playLock = true;
+          self._state = 'loading';
 
           var listener = function() {
+            self._state = 'loaded';
+            
             // Begin playback.
             playHtml5();
 
@@ -1362,15 +1371,15 @@
         lastTick = Date.now();
         vol += diff * tick;
 
+        // Round to within 2 decimal points.
+        vol = Math.round(vol * 100) / 100;
+
         // Make sure the volume is in the right bounds.
         if (diff < 0) {
           vol = Math.max(to, vol);
         } else {
           vol = Math.min(to, vol);
         }
-
-        // Round to within 2 decimal points.
-        vol = Math.round(vol * 100) / 100;
 
         // Change the volume.
         if (self._webAudio) {
@@ -1463,6 +1472,12 @@
             if (loop) {
               sound._node.bufferSource.loopStart = sound._start || 0;
               sound._node.bufferSource.loopEnd = sound._stop;
+
+              // If playing, restart playback to ensure looping updates.
+              if (self.playing(ids[i])) {
+                self.pause(ids[i], true);
+                self.play(ids[i], true);
+              }
             }
           }
         }
@@ -1582,7 +1597,9 @@
       // Determine the values based on arguments.
       if (args.length === 0) {
         // We will simply return the current position of the first node.
-        id = self._sounds[0]._id;
+        if (self._sounds.length) {
+          id = self._sounds[0]._id;
+        }
       } else if (args.length === 1) {
         // First check if this is an ID, and if not, assume it is a new seek position.
         var ids = self._getSoundIds();
@@ -1600,11 +1617,11 @@
 
       // If there is no ID, bail out.
       if (typeof id === 'undefined') {
-        return self;
+        return 0;
       }
 
       // If the sound hasn't loaded, add it to the load queue to seek when capable.
-      if (self._state !== 'loaded' || self._playLock) {
+      if (typeof seek === 'number' && (self._state !== 'loaded' || self._playLock)) {
         self._queue.push({
           event: 'seek',
           action: function() {
@@ -1638,12 +1655,12 @@
 
           // Seek and emit when ready.
           var seekAndEmit = function() {
-            self._emit('seek', id);
-
             // Restart the playback if the sound was playing.
             if (playing) {
               self.play(id, true);
             }
+
+            self._emit('seek', id);
           };
 
           // Wait for the play lock to be unset before emitting (HTML5 Audio).
@@ -1746,6 +1763,7 @@
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
           sounds[i]._node.removeEventListener(Howler._canPlayEvent, sounds[i]._loadFn, false);
+          sounds[i]._node.removeEventListener('ended', sounds[i]._endFn, false);
 
           // Release the Audio object back to the pool.
           Howler._releaseHtml5Audio(sounds[i]._node);
@@ -2149,6 +2167,10 @@
       var self = this;
       var isIOS = Howler._navigator && Howler._navigator.vendor.indexOf('Apple') >= 0;
 
+      if (!node.bufferSource) {
+        return self;
+      }
+
       if (Howler._scratchBuffer && node.bufferSource) {
         node.bufferSource.onended = null;
         node.bufferSource.disconnect(0);
@@ -2242,6 +2264,11 @@
         self._loadFn = self._loadListener.bind(self);
         self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
 
+        // Listen for the 'ended' event on the sound to account for edge-case where
+        // a finite sound has a duration of Infinity.
+        self._endFn = self._endListener.bind(self);
+        self._node.addEventListener('ended', self._endFn, false);
+
         // Setup the new audio node.
         self._node.src = parent._src;
         self._node.preload = parent._preload === true ? 'auto' : parent._preload;
@@ -2315,6 +2342,32 @@
 
       // Clear the event listener.
       self._node.removeEventListener(Howler._canPlayEvent, self._loadFn, false);
+    },
+
+    /**
+     * HTML5 Audio ended listener callback.
+     */
+    _endListener: function() {
+      var self = this;
+      var parent = self._parent;
+
+      // Only handle the `ended`` event if the duration is Infinity.
+      if (parent._duration === Infinity) {
+        // Update the parent duration to match the real audio duration.
+        // Round up the duration to account for the lower precision in HTML5 Audio.
+        parent._duration = Math.ceil(self._node.duration * 10) / 10;
+
+        // Update the sprite that corresponds to the real duration.
+        if (parent._sprite.__default[1] === Infinity) {
+          parent._sprite.__default[1] = parent._duration * 1000;
+        }
+
+        // Run the regular ended method.
+        parent._ended(self);
+      }
+
+      // Clear the event listener since the duration is now correct.
+      self._node.removeEventListener('ended', self._endFn, false);
     }
   };
 
