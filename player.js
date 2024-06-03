@@ -374,7 +374,7 @@ showPage();
 function getNextEvent(isNotBlocking, self, callback) {	
   const xhr = new XMLHttpRequest();
   // xhr.open('get', 'https://cors-anywhere.herokuapp.com/'+flacApiNextEventUrl, isNotBlocking);
-  xhr.open('get', 'https://api.allorigins.win/get?url='+flacApiNextEventUrl, isNotBlocking);
+  xhr.open('get', 'https://api.allorigins.win/raw?url='+flacApiNextEventUrl, isNotBlocking);
   var result;
   xhr.onload = function(e) {
     result = JSON.parse(this.response);
