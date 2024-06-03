@@ -374,7 +374,7 @@ showPage();
 function getNextEvent(isNotBlocking, self, callback) {	
   const xhr = new XMLHttpRequest();
   // xhr.open('get', 'https://cors-anywhere.herokuapp.com/'+flacApiNextEventUrl, isNotBlocking);
-  xhr.open('get', 'https://proxy.cors.sh/'+flacApiNextEventUrl, isNotBlocking);
+  xhr.open('get', 'https://thingproxy.freeboard.io/fetch/'+flacApiNextEventUrl, isNotBlocking);
   var result;
   xhr.onload = function(e) {
     result = JSON.parse(this.response);
